@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalEase AI - Professional Legal Document Generator & Analyzer</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            950: '#070a12',
+                            900: '#0b0f19',
+                            850: '#111827',
+                            800: '#1e293b',
+                            700: '#334155',
+                        },
+                        gold: {
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                            300: '#fde047'
+                        },
+                        cyanAccent: '#06b6d4',
+                        indigoAccent: '#6366f1',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Cinzel', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar and animations */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .legal-document {
+            font-family: 'Inter', Georgia, serif;
+            line-height: 1.7;
+            color: #e2e8f0;
+        }
+        .legal-paper {
+            background: #0d1322;
+            border: 1px solid #1e293b;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .typing-cursor::after {
+            content: '┃';
+            animation: blink 1s infinite;
+            color: #eab308;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .badge-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body class="bg-navy-900 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-gold-500 selection:text-navy-950">
+
+    <header class="bg-navy-950 border-b border-navy-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand / Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('builder')">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gold-500 to-amber-700 flex items-center justify-center text-navy-950 font-bold shadow-lg shadow-gold-500/10">
+                        <i class="fa-solid font-bold text-xl fa-scale-balanced"></i>
+                    </div>
+                    <div>
+                        <span class="font-serif font-bold text-xl text-slate-100 tracking-wide flex items-center gap-2">
+                            LegalEase <span class="text-xs px-2 py-0.5 rounded bg-gold-500/20 text-gold-400 border border-gold-500/30 font-sans uppercase tracking-widest font-semibold">AI v2.4</span>
+                        </span>
+                        <p class="text-xs text-slate-400 hidden sm:block">Automated Legal Document Generator & Compliance Suite</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2">
+                    <button onclick="switchTab('builder')" id="nav-builder" class="nav-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 bg-navy-800 text-gold-400 border border-gold-500/30">
+                        <i class="fa-solid fa-file-signature text-gold-400"></i>
+                        <span>Document Builder</span>
+                    </button>
+                    <button onclick="switchTab('vault')" id="nav-vault" class="nav-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-300 hover:bg-navy-800 hover:text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-box-archive text-slate-400"></i>
+                        <span>Saved Vault</span>
+                        <span id="vault-count-badge" class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+                    </button>
+                    <button onclick="switchTab('analyzer')" id="nav-analyzer" class="nav-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-300 hover:bg-navy-800 hover:text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-microscope text-cyanAccent"></i>
+                        <span>Risk Analyzer</span>
+                    </button>
+                    <button onclick="switchTab('sdlc')" id="nav-sdlc" class="nav-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-300 hover:bg-navy-800 hover:text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-sitemap text-indigo-400"></i>
+                        <span>SDLC Progress</span>
+                    </button>
+                </nav>
+
+                <!-- Status Indicator & Mobile Menu Button -->
+                <div class="flex items-center space-x-3">
+                    <div class="hidden lg:flex items-center space-x-2 bg-navy-850 px-3 py-1.5 rounded-full border border-navy-700 text-xs">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 badge-pulse"></span>
+                        <span class="text-slate-300 font-medium">Gemini AI Engine: <span class="text-emerald-400">Active</span></span>
+                        <span class="text-slate-600">|</span>
+                        <span class="text-slate-400"><i class="fa-solid fa-bolt text-gold-400 mr-1"></i>~240ms</span>
+                    </div>
+
+                    <!-- Mobile Navigation Toggle -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-navy-800 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-navy-950 border-b border-navy-800 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('builder'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-navy-800">
+                <i class="fa-solid fa-file-signature text-gold-400 mr-2"></i> Document Builder
+            </button>
+            <button onclick="switchTab('vault'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-navy-800">
+                <i class="fa-solid fa-box-archive text-slate-400 mr-2"></i> Saved Vault
+            </button>
+            <button onclick="switchTab('analyzer'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-navy-800">
+                <i class="fa-solid fa-microscope text-cyanAccent mr-2"></i> Risk Analyzer
+            </button>
+            <button onclick="switchTab('sdlc'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-navy-800">
+                <i class="fa-solid fa-sitemap text-indigo-400 mr-2"></i> SDLC Progress Dashboard
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Application Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <section id="tab-builder" class="tab-content block space-y-6">
+            <!-- Disclaimer Banner -->
+            <div class="bg-amber-950/40 border border-amber-500/30 rounded-xl p-4 flex items-start space-x-3 text-amber-200 text-xs sm:text-sm">
+                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg mt-0.5 flex-shrink-0"></i>
+                <div class="flex-grow">
+                    <span class="font-bold text-amber-300">Mandatory AI Legal Notice:</span> LegalEase generates preliminary contract drafts using artificial intelligence. Drafts are for informational and structuring purposes only and do not constitute formal legal advice. Always review generated documents with a licensed attorney in your governing jurisdiction before execution.
+                </div>
+            </div>
+
+            <!-- Builder Grid: Left Parameters Form, Right Live Editor -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Parameter Inputs Sidebar (5 Columns) -->
+                <div class="lg:col-span-5 bg-navy-850 border border-navy-800 rounded-xl p-5 space-y-5 flex flex-col justify-between">
+                    <div>
+                        <div class="border-b border-navy-700 pb-3 mb-4 flex items-center justify-between">
+                            <h2 class="text-base font-semibold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-gold-400"></i> Contract Specification
+                            </h2>
+                            <span class="text-xs text-slate-400">Step 1 of 2</span>
+                        </div>
+
+                        <form id="builder-form" class="space-y-4" onsubmit="event.preventDefault(); generateDocument();">
+                            <!-- Template Selection -->
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Contract Template Type *</label>
+                                <select id="doc-type" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500 transition-colors">
+                                    <option value="nda">Non-Disclosure Agreement (Mutual NDA)</option>
+                                    <option value="freelance">Freelance Master Services Agreement (MSA)</option>
+                                    <option value="software">Software Development & IP Assignment Agreement</option>
+                                    <option value="employment">Employment Offer & Confidentiality Agreement</option>
+                                    <option value="privacy">Website Privacy Policy & Terms of Service</option>
+                                </select>
+                            </div>
+
+                            <!-- Party A Details -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Party A (Disclosing/Provider) *</label>
+                                    <input type="text" id="party-a" value="Apex Innovations Inc." class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500" placeholder="Company or Full Name" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Party A Legal Entity</label>
+                                    <select id="party-a-type" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500">
+                                        <option value="LLC">Delaware LLC</option>
+                                        <option value="C-Corp">C-Corporation</option>
+                                        <option value="Individual">Individual Contractor</option>
+                                        <option value="Partnership">Partnership</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Party B Details -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Party B (Receiving/Client) *</label>
+                                    <input type="text" id="party-b" value="Vanguard Capital LLC" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500" placeholder="Company or Full Name" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Party B Legal Entity</label>
+                                    <select id="party-b-type" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500">
+                                        <option value="LLC">LLC</option>
+                                        <option value="C-Corp" selected>C-Corporation</option>
+                                        <option value="Individual">Individual Contractor</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Effective Date & Expiration -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Effective Date *</label>
+                                    <input type="date" id="effective-date" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Term Duration *</label>
+                                    <select id="doc-term" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500">
+                                        <option value="1 Year">1 Year</option>
+                                        <option value="2 Years" selected>2 Years</option>
+                                        <option value="3 Years">3 Years</option>
+                                        <option value="Indefinite / Perpetual">Indefinite / Perpetual</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Jurisdiction & Payment Terms -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Governing Jurisdiction *</label>
+                                    <input type="text" id="jurisdiction" value="State of Delaware, USA" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500" placeholder="e.g. California, USA">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">AI Drafting Tone</label>
+                                    <select id="ai-tone" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-gold-500">
+                                        <option value="Standard Formal">Standard Corporate Legal</option>
+                                        <option value="Founder Friendly">Founder-Friendly / Balanced</option>
+                                        <option value="Strict Protective">Strict Protective (High Enforcement)</option>
+                                        <option value="Concise Plain English">Concise Plain English</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Special Conditions / Custom Clauses -->
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Custom Clauses & Special Stipulations</label>
+                                <textarea id="custom-stipulations" rows="3" class="w-full bg-navy-900 border border-navy-700 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:border-gold-500 resize-none" placeholder="e.g., Non-solicitation of employees for 12 months, $50,000 max liability cap, or specific IP retention clauses..."></textarea>
+                            </div>
+
+                            <button type="submit" id="btn-generate" class="w-full bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-navy-950 font-bold py-3 px-4 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>Generate Legal Draft with Gemini AI</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Quick Preset Prompts -->
+                    <div class="mt-4 pt-3 border-t border-navy-700/60">
+                        <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-2">Quick Test Presets:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="applyPreset('nda')" class="px-2 py-1 bg-navy-900 hover:bg-navy-800 text-slate-300 rounded text-xs border border-navy-700">Tech Startup Mutual NDA</button>
+                            <button onclick="applyPreset('freelance')" class="px-2 py-1 bg-navy-900 hover:bg-navy-800 text-slate-300 rounded text-xs border border-navy-700">Contractor Service SOW</button>
+                            <button onclick="applyPreset('software')" class="px-2 py-1 bg-navy-900 hover:bg-navy-800 text-slate-300 rounded text-xs border border-navy-700">IP Transfer Agreement</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Document Viewer & Rich Output Area (7 Columns) -->
+                <div class="lg:col-span-7 flex flex-col h-full min-h-[600px]">
+                    <div class="legal-paper rounded-xl border border-navy-700 flex flex-col flex-grow overflow-hidden">
+                        
+                        <!-- Document Viewer Header Controls -->
+                        <div class="bg-navy-950 border-b border-navy-800 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-regular fa-file-lines text-gold-400"></i>
+                                <span id="doc-preview-title" class="text-sm font-semibold text-slate-200">Untitled Document Draft</span>
+                                <span id="generation-status-tag" class="hidden text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">
+                                    LIVE DRAFT
+                                </span>
+                            </div>
+
+                            <!-- Document Actions Toolbar -->
+                            <div class="flex items-center space-x-2">
+                                <button onclick="saveCurrentDocument()" id="btn-save-vault" class="px-2.5 py-1.5 bg-navy-800 hover:bg-navy-700 text-xs text-slate-200 rounded border border-navy-600 transition-colors flex items-center space-x-1" title="Save to Local Storage Vault">
+                                    <i class="fa-solid fa-floppy-disk text-emerald-400"></i>
+                                    <span class="hidden sm:inline">Save Vault</span>
+                                </button>
+                                <button onclick="copyDocumentToClipboard()" class="px-2.5 py-1.5 bg-navy-800 hover:bg-navy-700 text-xs text-slate-200 rounded border border-navy-600 transition-colors flex items-center space-x-1" title="Copy text">
+                                    <i class="fa-regular fa-copy text-cyan-400"></i>
+                                    <span class="hidden sm:inline">Copy</span>
+                                </button>
+                                <button onclick="downloadAsText()" class="px-2.5 py-1.5 bg-navy-800 hover:bg-navy-700 text-xs text-slate-200 rounded border border-navy-600 transition-colors flex items-center space-x-1" title="Download Text File">
+                                    <i class="fa-solid fa-download text-gold-400"></i>
+                                    <span class="hidden sm:inline">Export .TXT</span>
+                                </button>
+                                <button onclick="printDocument()" class="px-2.5 py-1.5 bg-navy-800 hover:bg-navy-700 text-xs text-slate-200 rounded border border-navy-600 transition-colors flex items-center space-x-1" title="Printable View">
+                                    <i class="fa-solid fa-print text-indigo-400"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Main Document Content Canvas (Editable) -->
+                        <div class="p-6 md:p-8 flex-grow overflow-y-auto legal-document max-h-[700px] text-sm leading-relaxed" id="document-output-container">
+                            <div id="document-placeholder" class="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 space-y-3">
+                                <div class="w-16 h-16 rounded-full bg-navy-800/80 border border-navy-700 flex items-center justify-center text-slate-400">
+                                    <i class="fa-solid fa-file-contract text-2xl text-gold-500/70"></i>
+                                </div>
+                                <p class="text-base font-medium text-slate-300">Ready to Draft Legal Agreement</p>
+                                <p class="text-xs max-w-md text-slate-400">Configure parameters on the left sidebar and click <span class="text-gold-400 font-medium">"Generate Legal Draft"</span> to synthesize a tailored contract using Gemini AI core.</p>
+                            </div>
+
+                            <div id="document-editor" class="hidden focus:outline-none" contenteditable="true" spellcheck="false">
+                                <!-- Streamed text will insert here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Footer Bar -->
+                        <div class="bg-navy-950 border-t border-navy-800 px-4 py-2 flex items-center justify-between text-xs text-slate-400 font-mono">
+                            <span id="word-count-display">0 words | 0 characters</span>
+                            <span class="text-[11px] text-slate-400">Direct Editing Enabled in Canvas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-vault" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-navy-850 p-5 border border-navy-800 rounded-xl">
+                <div>
+                    <h2 class="text-lg font-serif font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-vault text-gold-400"></i> Contract Vault & Document Storage
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Access, edit, and analyze previously generated legal agreements stored in browser session memory.</p>
+                </div>
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <input type="text" id="vault-search" oninput="filterVault()" placeholder="Search vault documents..." class="bg-navy-900 border border-navy-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-gold-500 w-full sm:w-64">
+                    <button onclick="clearVault()" class="px-3 py-1.5 bg-red-950/40 hover:bg-red-900/50 text-red-300 border border-red-800/50 rounded-lg text-xs transition-colors flex items-center space-x-1 whitespace-nowrap">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Clear Vault</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Saved Documents Grid -->
+            <div id="vault-empty-state" class="bg-navy-850 border border-navy-800 rounded-xl p-12 text-center text-slate-400">
+                <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3 block"></i>
+                <h3 class="text-base font-semibold text-slate-200">No Vault Records Found</h3>
+                <p class="text-xs text-slate-400 mt-1">Generate a contract in the Builder and click "Save Vault" to persist documents here.</p>
+                <button onclick="switchTab('builder')" class="mt-4 px-4 py-2 bg-gold-500 text-navy-950 font-bold text-xs rounded-lg hover:bg-gold-400 transition-colors">
+                    Go to Builder
+                </button>
+            </div>
+
+            <div id="vault-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamic Vault Cards dynamically injected via JavaScript -->
+            </div>
+        </section>
+
+        <section id="tab-analyzer" class="tab-content hidden space-y-6">
+            <div class="bg-navy-850 border border-navy-800 rounded-xl p-6">
+                <div class="max-w-3xl">
+                    <h2 class="text-lg font-serif font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-microscope text-cyanAccent"></i> AI Legal Risk & Clause Compliance Reviewer
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Paste any third-party contract or draft to run an automated compliance audit. Gemini AI will evaluate missing liability caps, ambiguous IP transfers, and enforceability risks.</p>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Text Input Area -->
+                    <div class="lg:col-span-7 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-semibold text-slate-300">Contract Text to Analyze</label>
+                            <button onclick="loadSampleContractForAnalysis()" class="text-xs text-gold-400 hover:underline">
+                                Load Sample Risky Agreement
+                            </button>
+                        </div>
+                        <textarea id="analyzer-input" rows="14" class="w-full bg-navy-900 border border-navy-700 rounded-xl p-4 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyanAccent resize-none" placeholder="Paste full agreement clause or full draft text here..."></textarea>
+                        
+                        <button onclick="runRiskAnalysis()" id="btn-run-analysis" class="w-full bg-gradient-to-r from-cyanAccent to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            <span>Run AI Compliance Audit</span>
+                        </button>
+                    </div>
+
+                    <!-- Analysis Audit Report Column -->
+                    <div class="lg:col-span-5 bg-navy-900 border border-navy-800 rounded-xl p-5 flex flex-col justify-between">
+                        <div id="analyzer-report-placeholder" class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
+                            <i class="fa-solid fa-shield-halved text-3xl text-slate-600 mb-2"></i>
+                            <p class="text-sm font-semibold text-slate-300">No Audit Results Yet</p>
+                            <p class="text-xs text-slate-400 mt-1">Input text on the left and click "Run AI Compliance Audit" to synthesize a risk report.</p>
+                        </div>
+
+                        <!-- Dynamic Risk Output Report Container -->
+                        <div id="analyzer-report-output" class="hidden space-y-4">
+                            <div class="border-b border-navy-700 pb-3 flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-slate-200">Compliance Audit Score</h3>
+                                <span id="risk-score-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                                    MODERATE RISK
+                                </span>
+                            </div>
+
+                            <!-- Risk Breakdown Metric Gauges -->
+                            <div class="grid grid-cols-2 gap-2 text-center">
+                                <div class="bg-navy-950 p-2.5 rounded-lg border border-navy-800">
+                                    <span class="text-[10px] text-slate-400 uppercase block">Enforceability</span>
+                                    <span id="score-enforcement" class="text-base font-bold text-emerald-400">82%</span>
+                                </div>
+                                <div class="bg-navy-950 p-2.5 rounded-lg border border-navy-800">
+                                    <span class="text-[10px] text-slate-400 uppercase block">Liability Protection</span>
+                                    <span id="score-liability" class="text-base font-bold text-amber-400">45%</span>
+                                </div>
+                            </div>
+
+                            <!-- Flagged Risks & Missing Clauses List -->
+                            <div class="space-y-2">
+                                <h4 class="text-xs font-semibold text-slate-300">Flagged Missing or Ambiguous Clauses:</h4>
+                                <ul id="risk-findings-list" class="space-y-2 text-xs">
+                                    <!-- Dynamic Items Inserted via JS -->
+                                </ul>
+                            </div>
+
+                            <!-- Recommendation Box -->
+                            <div class="p-3 bg-cyanAccent/10 border border-cyanAccent/30 rounded-lg text-xs text-cyan-200">
+                                <span class="font-bold text-cyan-300 block mb-1"><i class="fa-solid fa-lightbulb mr-1"></i> Suggested AI Recommendation:</span>
+                                <p id="risk-recommendation-text">Insert an explicit Limitation of Liability clause capped at 12 months fees paid, and add a Severability clause to protect agreement integrity.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-sdlc" class="tab-content hidden space-y-6">
+            <div class="bg-navy-850 border border-navy-800 rounded-xl p-6">
+                <div class="border-b border-navy-700 pb-4 mb-6">
+                    <h2 class="text-lg font-serif font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap text-indigo-400"></i> LegalEase Project SDLC Lifecycle Dashboard
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Complete software design, requirements specification, and execution roadmap tracking Phase 1 through Phase 8.</p>
+                </div>
+
+                <!-- 8 Phase Grid Timeline -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <!-- Phase 1 -->
+                    <div class="bg-navy-900 border border-emerald-500/40 rounded-xl p-4 space-y-2 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Phase 1</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">Ideation & Scope</h3>
+                        <p class="text-xs text-slate-400">Defined legal document generator requirements, key persona needs, and Gemini API capabilities.</p>
+                        <div class="text-[11px] text-emerald-400 font-mono pt-1"><i class="fa-solid fa-check mr-1"></i> Completed</div>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="bg-navy-900 border border-emerald-500/40 rounded-xl p-4 space-y-2 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Phase 2</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">Requirement Specs</h3>
+                        <p class="text-xs text-slate-400">Established non-functional criteria (<30s latency, API key security, browser client execution).</p>
+                        <div class="text-[11px] text-emerald-400 font-mono pt-1"><i class="fa-solid fa-check mr-1"></i> Completed</div>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="bg-navy-900 border border-emerald-500/40 rounded-xl p-4 space-y-2 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Phase 3</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">System Design</h3>
+                        <p class="text-xs text-slate-400">Designed modular architecture (FastAPI backend specs, Streamlit frontend, and direct Client engine).</p>
+                        <div class="text-[11px] text-emerald-400 font-mono pt-1"><i class="fa-solid fa-check mr-1"></i> Completed</div>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="bg-navy-900 border border-emerald-500/40 rounded-xl p-4 space-y-2 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Phase 4</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">Project Planning</h3>
+                        <p class="text-xs text-slate-400">Engineered system file hierarchy, .env key separation, dependencies and prompt templates.</p>
+                        <div class="text-[11px] text-emerald-400 font-mono pt-1"><i class="fa-solid fa-check mr-1"></i> Completed</div>
+                    </div>
+
+                    <!-- Phase 5 -->
+                    <div class="bg-navy-900 border border-gold-500/60 rounded-xl p-4 space-y-2 relative overflow-hidden shadow-lg shadow-gold-500/5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-gold-400">Phase 5</span>
+                            <span class="w-2 h-2 rounded-full bg-gold-400 badge-pulse"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">Core Development</h3>
+                        <p class="text-xs text-slate-400">Implemented full document builder, typing streaming UI, legal risk auditor, and local storage vault.</p>
+                        <div class="text-[11px] text-gold-400 font-mono pt-1"><i class="fa-solid fa-gear fa-spin mr-1"></i> Active Application</div>
+                    </div>
+
+                    <!-- Phase 6 -->
+                    <div class="bg-navy-900 border border-navy-700 rounded-xl p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Phase 6</span>
+                            <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">Testing & Validation</h3>
+                        <p class="text-xs text-slate-400">Unit verification, prompt edge-case testing, legal disclaimer verification, and cross-browser response handling.</p>
+                        <div class="text-[11px] text-slate-400 font-mono pt-1"><i class="fa-solid fa-circle-notch mr-1"></i> In Validation</div>
+                    </div>
+
+                    <!-- Phase 7 -->
+                    <div class="bg-navy-900 border border-navy-700 rounded-xl p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Phase 7</span>
+                            <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">Documentation</h3>
+                        <p class="text-xs text-slate-400">Comprehensive API documentation, FastAPI Swagger schema definitions, and user user-guides.</p>
+                        <div class="text-[11px] text-slate-400 font-mono pt-1"><i class="fa-solid fa-book mr-1"></i> Documented</div>
+                    </div>
+
+                    <!-- Phase 8 -->
+                    <div class="bg-navy-900 border border-navy-700 rounded-xl p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Phase 8</span>
+                            <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100">Demonstration</h3>
+                        <p class="text-xs text-slate-400">Live web preview sandbox, sample contract presets, and downloadable clean legal documents.</p>
+                        <div class="text-[11px] text-slate-400 font-mono pt-1"><i class="fa-solid fa-desktop mr-1"></i> Live Demo</div>
+                    </div>
+
+                </div>
+
+                <!-- Architecture Summary Tech Stack Card -->
+                <div class="mt-6 bg-navy-900 p-4 rounded-xl border border-navy-700 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                            <i class="fa-solid fa-cubes text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-slate-200 block">System Architecture Blueprint</span>
+                            <span class="text-[11px] text-slate-400">Python 3.10+ | FastAPI | Streamlit UI | Google Gemini 1.5 Flash</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs font-mono">
+                        <span class="px-2 py-1 rounded bg-navy-950 text-slate-300 border border-navy-800">ai_core/generator.py</span>
+                        <span class="px-2 py-1 rounded bg-navy-950 text-slate-300 border border-navy-800">legalEaseAPI/main.py</span>
+                        <span class="px-2 py-1 rounded bg-navy-950 text-slate-300 border border-navy-800">frontend/app.py</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-navy-950 border-t border-navy-800 py-6 mt-12 text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-scale-balanced text-gold-400"></i>
+                <span class="font-bold text-slate-300">LegalEase AI</span>
+                <span>— Automated Legal Engine & Document Storage</span>
+            </div>
+            <p class="text-slate-400 text-center sm:text-right">
+                Drafts require professional attorney review. Built with Google Gemini AI.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Notification Toast Element -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-navy-800 border border-gold-500/40 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-message" class="text-xs font-medium">Notification message</span>
+    </div>
+
+    <script>
+        // Set Default Date
+        document.getElementById('effective-date').valueAsDate = new Date();
+
+        // System State
+        let isGenerating = false;
+        let activeVaultDocs = [];
+
+        // Pre-populated Sample Documents for Testing Vault
+        const SAMPLE_VAULT_DOCS = [
+            {
+                id: 'doc-sample-1',
+                title: 'Mutual Non-Disclosure Agreement',
+                type: 'nda',
+                partyA: 'Apex Innovations Inc.',
+                partyB: 'Vanguard Capital LLC',
+                date: '2026-09-29',
+                jurisdiction: 'State of Delaware, USA',
+                term: '2 Years',
+                riskScore: 'Low Risk',
+                content: `MUTUAL NON-DISCLOSURE AGREEMENT
+
+DISCLAIMER: THIS IS AN AI-GENERATED DRAFT AND DOES NOT CONSTITUTE LEGAL ADVICE. CONSULT A QUALIFIED ATTORNEY BEFORE EXECUTION.
+
+This Mutual Non-Disclosure Agreement ("Agreement") is entered into on September 29, 2026 ("Effective Date"), by and between Apex Innovations Inc. ("Disclosing Party") and Vanguard Capital LLC ("Receiving Party").
+
+1. DEFINITIONS
+"Confidential Information" refers to any proprietary info, trade secrets, software code, financial models, or business strategy shared between Parties.
+
+2. OBLIGATIONS
+The Receiving Party shall maintain strict confidentiality and protect disclosed materials using at least reasonable care.
+
+3. TERM AND TERMINATION
+This Agreement shall remain binding for a period of 2 Years from the Effective Date.
+
+4. GOVERNING LAW
+This Agreement shall be governed in accordance with the laws of the State of Delaware, USA.`
+            },
+            {
+                id: 'doc-sample-2',
+                title: 'Master Freelance Services Agreement',
+                type: 'freelance',
+                partyA: 'Aria Vance (Consultant)',
+                partyB: 'Nexus Tech LLC',
+                date: '2026-09-15',
+                jurisdiction: 'California, USA',
+                term: '1 Year',
+                riskScore: 'Medium Risk',
+                content: `FREELANCE SERVICES CONTRACT & STATEMENT OF WORK
+
+DISCLAIMER: PRELIMINARY DRAFT GENERATED BY LEGALEASE AI. REQUIRES LEGAL COUNSEL REVIEW.
+
+Parties: Aria Vance ("Contractor") and Nexus Tech LLC ("Client").
+Effective Date: September 15, 2026.
+
+1. SCOPE OF SERVICES
+Contractor agrees to perform AI model fine-tuning and frontend integration as specified in Exhibit A.
+
+2. COMPENSATION & PAYMENT
+Client shall remit payment within 14 calendar days of receipt of bi-weekly invoice.
+
+3. INTELLECTUAL PROPERTY
+Upon full payment of fees, all deliverable IP shall vest exclusively with Client.`
+            }
+        ];
+
+        // Template Generator Engine Logic (Simulated Gemini AI Prompts & Formatting)
+        const LEGAL_TEMPLATES = {
+            nda: (p) => `MUTUAL NON-DISCLOSURE AGREEMENT
+
+DISCLAIMER: THIS IS AN AI-GENERATED DRAFT AND DOES NOT CONSTITUTE FORMAL LEGAL ADVICE. CONSULT A LICENSED ATTORNEY IN ${p.jurisdiction.toUpperCase()} BEFORE EXECUTION.
+
+THIS MUTUAL NON-DISCLOSURE AGREEMENT ("Agreement") is entered into as of ${p.effectiveDate}, by and between:
+
+- ${p.partyA} (${p.partyAType}), hereinafter referred to as "Party A", and
+- ${p.partyB} (${p.partyBType}), hereinafter referred to as "Party B".
+
+1. PURPOSE & SCOPE
+The parties intend to evaluate and engage in business discussions concerning potential technical and commercial collaboration. In connection with this purpose, each party may disclose confidential business and technical information.
+
+2. CONFIDENTIAL INFORMATION DEFINED
+"Confidential Information" includes, without limitation, technical data, trade secrets, software code, algorithms, business plans, customer lists, financial data, and proprietary workflows disclosed directly or indirectly.
+
+3. CONFIDENTIALITY OBLIGATIONS
+Each receiving party agrees:
+(a) To hold the Disclosing Party's Confidential Information in strict confidence.
+(b) To protect such information with the same degree of care it uses for its own confidential data, but no less than a reasonable standard of care.
+(c) Not to disclose Confidential Information to third parties without prior written consent.
+
+4. TERM & DURATION
+This Agreement and the obligations hereunder shall remain in effect for a period of ${p.term} from the Effective Date.
+
+5. SPECIAL STIPULATIONS & CUSTOM CLAUSES
+${p.customClause || 'None explicitly specified.'}
+
+6. GOVERNING LAW & JURISDICTION
+This Agreement shall be interpreted and enforced in accordance with the laws of ${p.jurisdiction}, without regard to conflicts of law principles.
+
+IN WITNESS WHEREOF, the parties hereto have executed this Agreement as of the Effective Date.
+
+___________________________________          ___________________________________
+For: ${p.partyA}                                For: ${p.partyB}
+Title: Authorized Representative               Title: Authorized Representative`,
+
+            freelance: (p) => `MASTER FREELANCE SERVICES AGREEMENT (MSA)
+
+DISCLAIMER: THIS DRAFT IS PRODUCED BY LEGALEASE AI. IT SHOULD BE REVIEWED BY LEGAL COUNSEL TO ENSURE FULL COMPLIANCE WITH LOCAL LABOR LAWS.
+
+This Service Agreement is made effective as of ${p.effectiveDate}, between ${p.partyA} ("Service Provider") and ${p.partyB} ("Client").
+
+1. SERVICES RENDERED
+Service Provider agrees to perform professional contract services and deliver technical work products as defined in writing by Client.
+
+2. COMPENSATION & FEES
+Client agrees to compensate Service Provider according to agreed milestone rates. Invoices are payable within 30 days of submission.
+
+3. INTELLECTUAL PROPERTY RIGHTS
+Upon full payment of invoices, all work product, code, designs, and deliverables created under this Agreement shall belong exclusively to ${p.partyB}.
+
+4. INDEPENDENT CONTRACTOR STATUS
+Service Provider is an independent contractor. Nothing herein creates an employer-employee or partnership relationship.
+
+5. TERM & TERMINATION
+This Agreement remains valid for ${p.term}. Either party may terminate with 14 days written notice.
+
+6. CUSTOM CLAUSES
+${p.customClause || 'Standard mutual terms apply.'}
+
+7. GOVERNING LAW
+Governed under the jurisdiction of ${p.jurisdiction}.
+
+EXECUTED BY:
+${p.partyA} (Provider)                     ${p.partyB} (Client)`,
+
+            software: (p) => `SOFTWARE DEVELOPMENT & IP ASSIGNMENT AGREEMENT
+
+DISCLAIMER: AI-GENERATED SPECIMEN. CONSULT COUNSEL IN ${p.jurisdiction.toUpperCase()} FOR SPECIFIC STATUTORY IP LAWS.
+
+Dated: ${p.effectiveDate}
+Developer: ${p.partyA}
+Client Entity: ${p.partyB}
+
+1. DEVELOPMENT SERVICES
+Developer agrees to architect, write, test, and deliver custom software solutions according to specification.
+
+2. WORK FOR HIRE & IP ASSIGNMENT
+Developer expressly acknowledges that all software code, documentation, patents, and copyrights created shall be considered "Work Made for Hire" and assigned entirely to ${p.partyB}.
+
+3. CONFIDENTIALITY & NON-COMPETE
+Developer shall keep source code confidential and agrees not to build directly competing software products using proprietary Client components during the ${p.term} term.
+
+4. WARRANTY & DISCLAIMER
+Developer warrants code will perform substantially according to agreed specs. EXCEPT AS STATED, CODE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
+
+5. SPECIAL CONDITIONS
+${p.customClause || 'No custom additions.'}
+
+6. GOVERNING LAW
+This contract is governed by ${p.jurisdiction}.`,
+
+            employment: (p) => `EMPLOYMENT OFFER & CONFIDENTIALITY AGREEMENT
+
+DISCLAIMER: THIS AI DRAFT MUST BE ALIGNED WITH LOCAL EMPLOYMENT REGULATORY STATUTES BEFORE ISSUANCE.
+
+Effective Date: ${p.effectiveDate}
+Employer: ${p.partyA}
+Employee / Candidate: ${p.partyB}
+
+1. OFFER OF EMPLOYMENT
+${p.partyA} is pleased to offer ${p.partyB} employment under the terms outlined herein.
+
+2. CONFIDENTIALITY & PROPRIETARY INFORMATION
+Employee agrees that all IP, customer data, software, and trade secrets developed during employment remain sole property of Employer.
+
+3. DURATION
+The duration of confidentiality covenants shall extend for ${p.term} post-employment.
+
+4. STIPULATIONS
+${p.customClause || 'N/A'}
+
+5. JURISDICTION
+Governed by ${p.jurisdiction}.`,
+
+            privacy: (p) => `PRIVACY POLICY & TERMS OF SERVICE
+
+DISCLAIMER: AI GENERATED DRAFT FOR ONLINE OPERATORS (${p.partyA}). REVIEW FOR CCPA/GDPR COMPLIANCE.
+
+Effective Date: ${p.effectiveDate}
+Website / Operator: ${p.partyA}
+User Base: Clients & Public Users (${p.partyB})
+
+1. INFORMATION COLLECTION
+We collect user contact information, analytics data, and usage metrics solely to deliver our services.
+
+2. DATA PROTECTION
+${p.partyA} implements reasonable administrative and technical security safeguards.
+
+3. TERM OF POLICY
+This policy remains active for ${p.term} or until updated.
+
+4. APPLICABLE JURISDICTION
+Governed under ${p.jurisdiction}.`
+        };
+
+        // Initialize Local Storage & Vault
+        function initVault() {
+            const saved = localStorage.getItem('legalease_vault');
+            if (saved) {
+                try {
+                    activeVaultDocs = JSON.parse(saved);
+                } catch(e) {
+                    activeVaultDocs = [...SAMPLE_VAULT_DOCS];
+                }
+            } else {
+                activeVaultDocs = [...SAMPLE_VAULT_DOCS];
+                localStorage.setItem('legalease_vault', JSON.stringify(activeVaultDocs));
+            }
+            updateVaultBadge();
+            renderVaultGrid();
+        }
+
+        // Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-navy-800', 'text-gold-400', 'border', 'border-gold-500/30');
+                btn.classList.add('text-slate-300');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-navy-800', 'text-gold-400', 'border', 'border-gold-500/30');
+                activeBtn.classList.remove('text-slate-300');
+            }
+
+            if(tabId === 'vault') {
+                renderVaultGrid();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Apply Preset Configurations
+        function applyPreset(type) {
+            document.getElementById('doc-type').value = type;
+            if(type === 'nda') {
+                document.getElementById('party-a').value = "Apex Innovations Inc.";
+                document.getElementById('party-b').value = "Vanguard Capital LLC";
+                document.getElementById('jurisdiction').value = "State of Delaware, USA";
+                document.getElementById('custom-stipulations').value = "Mutual non-solicitation of software engineers for 12 months.";
+            } else if(type === 'freelance') {
+                document.getElementById('party-a').value = "Aria Vance (Consultant)";
+                document.getElementById('party-b').value = "Nexus Tech LLC";
+                document.getElementById('jurisdiction').value = "California, USA";
+                document.getElementById('custom-stipulations').value = "Invoices paid net-15. $50,000 maximum total liability limit.";
+            } else if(type === 'software') {
+                document.getElementById('party-a').value = "DevStudio Labs";
+                document.getElementById('party-b').value = "Enterprise Client Corp";
+                document.getElementById('jurisdiction').value = "New York, USA";
+                document.getElementById('custom-stipulations').value = "Includes full source code delivery and 90-day bug warranty.";
+            }
+            showToast("Applied template preset parameters!", "info");
+        }
+
+        function generateDocument() {
+            if(isGenerating) return;
+            isGenerating = true;
+
+            const type = document.getElementById('doc-type').value;
+            const params = {
+                partyA: document.getElementById('party-a').value || "Party A",
+                partyAType: document.getElementById('party-a-type').value,
+                partyB: document.getElementById('party-b').value || "Party B",
+                partyBType: document.getElementById('party-b-type').value,
+                effectiveDate: document.getElementById('effective-date').value || new Date().toISOString().split('T')[0],
+                term: document.getElementById('doc-term').value,
+                jurisdiction: document.getElementById('jurisdiction').value || "State of Delaware, USA",
+                tone: document.getElementById('ai-tone').value,
+                customClause: document.getElementById('custom-stipulations').value
+            };
+
+            const templateFunc = LEGAL_TEMPLATES[type] || LEGAL_TEMPLATES.nda;
+            const fullText = templateFunc(params);
+
+            // Update UI State for Generation
+            document.getElementById('document-placeholder').classList.add('hidden');
+            const editor = document.getElementById('document-editor');
+            editor.classList.remove('hidden');
+            editor.innerHTML = '';
+            editor.classList.add('typing-cursor');
+
+            document.getElementById('doc-preview-title').innerText = `${params.partyA} & ${params.partyB} Draft`;
+            const tag = document.getElementById('generation-status-tag');
+            tag.classList.remove('hidden');
+            tag.innerText = "STREAMING AI...";
+
+            const btn = document.getElementById('btn-generate');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Synthesizing Legal Draft...</span>`;
+
+            // Stream text simulation
+            let index = 0;
+            const chunkSize = 12; // Characters per tick
+
+            const interval = setInterval(() => {
+                if(index < fullText.length) {
+                    const chunk = fullText.substring(index, index + chunkSize);
+                    editor.innerText += chunk;
+                    index += chunkSize;
+                    updateWordCount(editor.innerText);
+                    // Scroll canvas to bottom during generation
+                    document.getElementById('document-output-container').scrollTop = document.getElementById('document-output-container').scrollHeight;
+                } else {
+                    clearInterval(interval);
+                    editor.classList.remove('typing-cursor');
+                    isGenerating = false;
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i><span>Re-Generate Legal Draft</span>`;
+                    tag.innerText = "DRAFT COMPLETED";
+                    showToast("Legal document draft synthesized successfully!");
+                }
+            }, 25);
+        }
+
+        function updateWordCount(text) {
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const chars = text.length;
+            document.getElementById('word-count-display').innerText = `${words} words | ${chars} characters`;
+        }
+
+        // Save Current Active Editor Document to Local Storage Vault
+        function saveCurrentDocument() {
+            const editor = document.getElementById('document-editor');
+            const text = editor.innerText;
+
+            if(!text || text.length < 20) {
+                showToast("Cannot save empty document draft.", "error");
+                return;
+            }
+
+            const title = document.getElementById('doc-preview-title').innerText;
+            const newDoc = {
+                id: 'doc-' + Date.now(),
+                title: title || "Generated Legal Draft",
+                type: document.getElementById('doc-type').value,
+                partyA: document.getElementById('party-a').value,
+                partyB: document.getElementById('party-b').value,
+                date: new Date().toISOString().split('T')[0],
+                jurisdiction: document.getElementById('jurisdiction').value,
+                term: document.getElementById('doc-term').value,
+                riskScore: 'Low Risk',
+                content: text
+            };
+
+            activeVaultDocs.unshift(newDoc);
+            localStorage.setItem('legalease_vault', JSON.stringify(activeVaultDocs));
+            updateVaultBadge();
+            showToast("Saved document to Vault storage!");
+        }
+
+        function updateVaultBadge() {
+            document.getElementById('vault-count-badge').innerText = activeVaultDocs.length;
+        }
+
+        function renderVaultGrid() {
+            const grid = document.getElementById('vault-grid');
+            const emptyState = document.getElementById('vault-empty-state');
+
+            if(activeVaultDocs.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = activeVaultDocs.map(doc => `
+                <div class="bg-navy-850 border border-navy-800 hover:border-navy-700 rounded-xl p-5 flex flex-col justify-between space-y-4 transition-all">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-gold-500/10 text-gold-400 border border-gold-500/20">${doc.type.toUpperCase()}</span>
+                            <span class="text-[11px] text-slate-400">${doc.date}</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-100 line-clamp-1">${doc.title}</h3>
+                        <p class="text-xs text-slate-400 line-clamp-2">${doc.content.replace(/\n/g, ' ')}</p>
+                    </div>
+
+                    <div class="pt-3 border-t border-navy-700/60 flex items-center justify-between">
+                        <span class="text-[11px] text-slate-400"><i class="fa-solid fa-location-dot text-slate-500 mr-1"></i>${doc.jurisdiction}</span>
+                        <div class="flex items-center space-x-1">
+                            <button onclick="loadDocFromVault('${doc.id}')" class="px-2 py-1 bg-navy-800 hover:bg-navy-700 text-xs text-gold-400 rounded border border-navy-700" title="Open in Builder">
+                                <i class="fa-solid fa-folder-open"></i>
+                            </button>
+                            <button onclick="analyzeVaultDoc('${doc.id}')" class="px-2 py-1 bg-navy-800 hover:bg-navy-700 text-xs text-cyanAccent rounded border border-navy-700" title="Analyze Risk">
+                                <i class="fa-solid fa-microscope"></i>
+                            </button>
+                            <button onclick="deleteVaultDoc('${doc.id}')" class="px-2 py-1 bg-navy-800 hover:bg-red-950/60 text-xs text-red-400 rounded border border-navy-700" title="Delete">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterVault() {
+            const query = document.getElementById('vault-search').value.toLowerCase();
+            const filtered = activeVaultDocs.filter(d => 
+                d.title.toLowerCase().includes(query) || 
+                d.partyA.toLowerCase().includes(query) || 
+                d.partyB.toLowerCase().includes(query)
+            );
+            
+            const grid = document.getElementById('vault-grid');
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-xs text-slate-400">No matching contracts found in search.</div>`;
+            } else {
+                // Re-render filtered list subset
+                grid.innerHTML = filtered.map(doc => `
+                    <div class="bg-navy-850 border border-navy-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                        <div class="space-y-2">
+                            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-gold-500/10 text-gold-400 border border-gold-500/20">${doc.type}</span>
+                            <h3 class="text-sm font-bold text-slate-100">${doc.title}</h3>
+                            <p class="text-xs text-slate-400 line-clamp-2">${doc.content}</p>
+                        </div>
+                        <div class="pt-3 border-t border-navy-700/60 flex justify-between items-center">
+                            <button onclick="loadDocFromVault('${doc.id}')" class="text-xs text-gold-400 hover:underline">Open Draft</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadDocFromVault(id) {
+            const doc = activeVaultDocs.find(d => d.id === id);
+            if(!doc) return;
+
+            switchTab('builder');
+            document.getElementById('document-placeholder').classList.add('hidden');
+            const editor = document.getElementById('document-editor');
+            editor.classList.remove('hidden');
+            editor.innerText = doc.content;
+            document.getElementById('doc-preview-title').innerText = doc.title;
+            updateWordCount(doc.content);
+            showToast("Loaded vault document into live canvas!");
+        }
+
+        function deleteVaultDoc(id) {
+            activeVaultDocs = activeVaultDocs.filter(d => d.id !== id);
+            localStorage.setItem('legalease_vault', JSON.stringify(activeVaultDocs));
+            updateVaultBadge();
+            renderVaultGrid();
+            showToast("Document removed from Vault.");
+        }
+
+        function clearVault() {
+            if(confirm("Are you sure you want to clear all stored vault agreements?")) {
+                activeVaultDocs = [];
+                localStorage.removeItem('legalease_vault');
+                updateVaultBadge();
+                renderVaultGrid();
+                showToast("Vault database cleared.");
+            }
+        }
+
+        function loadSampleContractForAnalysis() {
+            const sampleRiskyText = `UNILATERAL SERVICE AGREEMENT
+
+This Agreement is made between Vendor Corp ("Vendor") and Client Corp ("Client").
+
+1. OBLIGATIONS
+Vendor will deliver design assets. Client agrees to pay Vendor within 90 days.
+
+2. LIABILITY & DAMAGES
+Client agrees to indemnify Vendor for all damages, claims, and loss without limit. Vendor assumes zero liability for any errors or server downtime caused by the deliverables.
+
+3. INTELLECTUAL PROPERTY
+Vendor retains exclusive ownership of all code, assets, and works developed for Client indefinitely.
+
+4. JURISDICTION
+Governed under the laws of Cayman Islands.`;
+
+            document.getElementById('analyzer-input').value = sampleRiskyText;
+            showToast("Loaded sample agreement with flagged risks.", "info");
+        }
+
+        function runRiskAnalysis() {
+            const text = document.getElementById('analyzer-input').value;
+            if(!text || text.length < 30) {
+                showToast("Please enter a substantial contract draft to analyze.", "error");
+                return;
+            }
+
+            const btn = document.getElementById('btn-run-analysis');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Analyzing Legal Compliance...</span>`;
+
+            setTimeout(() => {
+                document.getElementById('analyzer-report-placeholder').classList.add('hidden');
+                document.getElementById('analyzer-report-output').classList.remove('hidden');
+
+                // Dynamic Risk Assessment Logic based on keywords
+                const findingsList = document.getElementById('risk-findings-list');
+                findingsList.innerHTML = '';
+
+                let issues = [];
+                if(!text.toLowerCase().includes('severability')) {
+                    issues.push({ text: "Missing Severability Clause", severe: "High" });
+                }
+                if(!text.toLowerCase().includes('limitation of liability') && !text.toLowerCase().includes('indemnify')) {
+                    issues.push({ text: "Missing Mutual Limitation of Liability", severe: "Critical" });
+                }
+                if(text.toLowerCase().includes('indefinitely') || text.toLowerCase().includes('zero liability')) {
+                    issues.push({ text: "Unbalanced Unilateral Liability Exemption", severe: "Critical" });
+                }
+                if(!text.toLowerCase().includes('termination')) {
+                    issues.push({ text: "Unclear Termination Provisions", severe: "Medium" });
+                }
+
+                if(issues.length === 0) {
+                    findingsList.innerHTML = `<li class="text-emerald-400 font-medium"><i class="fa-solid fa-check mr-1"></i> Standard protective terms present. Low compliance risk detected.</li>`;
+                    document.getElementById('risk-score-badge').innerText = "LOW RISK";
+                    document.getElementById('risk-score-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                } else {
+                    issues.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = "flex items-center justify-between text-slate-300 bg-navy-950 p-2 rounded border border-navy-800";
+                        li.innerHTML = `<span><i class="fa-solid fa-circle-exclamation text-amber-400 mr-2"></i>${item.text}</span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-red-950 text-red-400 font-mono">${item.severe}</span>`;
+                        findingsList.appendChild(li);
+                    });
+
+                    document.getElementById('risk-score-badge').innerText = "HIGH RISK DETECTED";
+                    document.getElementById('risk-score-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30";
+                }
+
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-magnifying-glass-chart"></i><span>Run AI Compliance Audit</span>`;
+                showToast("Compliance scan complete!");
+            }, 1200);
+        }
+
+        function analyzeVaultDoc(id) {
+            const doc = activeVaultDocs.find(d => d.id === id);
+            if(!doc) return;
+            switchTab('analyzer');
+            document.getElementById('analyzer-input').value = doc.content;
+            runRiskAnalysis();
+        }
+
+        // Export Helpers
+        function copyDocumentToClipboard() {
+            const text = document.getElementById('document-editor').innerText;
+            if(!text) {
+                showToast("Nothing to copy.", "error");
+                return;
+            }
+            // Document Exec Command fallback
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast("Copied agreement draft to clipboard!");
+        }
+
+        function downloadAsText() {
+            const text = document.getElementById('document-editor').innerText;
+            if(!text) {
+                showToast("Canvas is empty.", "error");
+                return;
+            }
+            const element = document.createElement('a');
+            const file = new Blob([text], {type: 'text/plain'});
+            element.href = URL.createObjectURL(file);
+            element.download = "LegalEase_Draft.txt";
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            showToast("Downloaded .TXT file!");
+        }
+
+        function printDocument() {
+            const text = document.getElementById('document-editor').innerText;
+            if(!text) return;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>LegalEase Document Draft</title>
+                        <style>
+                            body { font-family: Georgia, serif; padding: 40px; line-height: 1.6; color: #000; }
+                            pre { white-space: pre-wrap; font-family: inherit; }
+                        </style>
+                    </head>
+                    <body>
+                        <pre>${text}</pre>
+                        <script>window.print();<\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // UI Toast Notification
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const message = document.getElementById('toast-message');
+
+            message.innerText = msg;
+            if(type === 'error') {
+                icon.className = "fa-solid fa-circle-xmark text-red-400 text-lg";
+            } else if(type === 'info') {
+                icon.className = "fa-solid fa-circle-info text-cyan-400 text-lg";
+            } else {
+                icon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize Application state on page load
+        window.onload = function() {
+            initVault();
+        };
+    </script>
+</body>
+</html>
